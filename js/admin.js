@@ -552,17 +552,44 @@ const AdminApp = {
         obj[headers[c]] = row[c] || '';
       }
 
-      // Validasi Ketentuan PRD
-      const errors = [];
-      const code = obj['question_code'] || `ROW-${r}`;
-      const type = (obj['type'] || '').trim().toUpperCase();
-      const qText = (obj['question_text'] || '').trim();
-      const qType = (obj['question_type'] || 'MULTIPLE_CHOICE').trim().toUpperCase();
-      const optA = (obj['option_a'] || '').trim();
-      const optB = (obj['option_b'] || '').trim();
-      const optC = (obj['option_c'] || '').trim();
-      const optD = (obj['option_d'] || '').trim();
-      const correct = (obj['correct_answer'] || '').trim().toUpperCase();
+      // Pemetaan Kolom Fleksibel (Mendukung format No/Materi/Level/Soal/Kunci & question_code/type/...)
+      const rawNo = (obj['no'] || '').trim();
+      const code = obj['question_code'] || (rawNo ? `NUM-${rawNo.padStart(3, '0')}` : `ROW-${r}`);
+      
+      let type = (obj['type'] || obj['kategori'] || '').trim().toUpperCase();
+      if (!type) {
+        // Otomatis deteksi dari materi/indikator jika ada
+        type = 'NUMERASI';
+      }
+
+      const qText = (obj['question_text'] || obj['soal'] || '').trim();
+      const bentuk = (obj['bentuk'] || '').toLowerCase();
+      
+      const optA = (obj['option_a'] || obj['a'] || '').trim();
+      const optB = (obj['option_b'] || obj['b'] || '').trim();
+      const optC = (obj['option_c'] || obj['c'] || '').trim();
+      const optD = (obj['option_d'] || obj['d'] || '').trim();
+
+      // Bersihkan spasi pada kunci jawaban (misal: "A, B, D" -> "A,B,D")
+      let correct = (obj['correct_answer'] || obj['kunci'] || '').replace(/\s+/g, '').toUpperCase();
+
+      let qType = (obj['question_type'] || '').trim().toUpperCase();
+      if (!qType) {
+        if (bentuk.includes('kompleks') || bentuk.includes('mcma') || correct.includes(',')) {
+          qType = 'MULTI_SELECT';
+        } else {
+          qType = 'MULTIPLE_CHOICE';
+        }
+      }
+
+      const explanation = (obj['explanation'] || obj['pembahasan'] || '').trim();
+      const level = (obj['level'] || '').toLowerCase();
+      let difficulty = (obj['difficulty'] || '').trim().toUpperCase();
+      if (!difficulty) {
+        if (level.includes('l1')) difficulty = 'MUDAH';
+        else if (level.includes('l3')) difficulty = 'SULIT';
+        else difficulty = 'SEDANG';
+      }
 
       if (!['LITERASI', 'NUMERASI'].includes(type)) {
         errors.push(`Kategori '${type}' tidak valid (wajib LITERASI atau NUMERASI)`);
@@ -595,8 +622,8 @@ const AdminApp = {
             { code: 'D', text: optD }
           ],
           correct_answer: correct,
-          explanation: obj['explanation'] || '',
-          difficulty: (obj['difficulty'] || 'SEDANG').toUpperCase(),
+          explanation: explanation,
+          difficulty: difficulty,
           status: 'ACTIVE'
         });
         reportRows.push(`<tr style="color:var(--accent-primary);"><td>Baris ${r + 1}</td><td>${code}</td><td>✓ Valid</td><td>Siap diimpor</td></tr>`);

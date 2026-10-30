@@ -3,9 +3,11 @@
   "name": "tryout-tka-sd",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/kelola-tka", "destination": "/admin.html" },
+    { "source": "/kelola-tka/(.*)", "destination": "/admin.html" },
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/admin/(.*)", "destination": "/admin.html" },
-    { "source": "/((?!api|admin|css|js|images|fonts|.*\\..*).*)", "destination": "/index.html" }
+    { "source": "/((?!api|admin|kelola-tka|css|js|images|fonts|.*\\..*).*)", "destination": "/index.html" }
   ],
   "headers": [
     {
