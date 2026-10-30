@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <!-- SheetJS Library untuk Import & Export File Excel (.xlsx) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     /* Admin specific layout styling to mirror NexusBank dashboard reference */
     .admin-layout-wrapper {
@@ -606,11 +608,11 @@
             <button type="button" class="pill-btn pill-btn-outline pill-btn-sm" onclick="AdminApp.openTemplateModal()">
               📊 Format Tabel Excel
             </button>
-            <a href="template_import_soal.csv" download="template_soal_tka_sd.csv" class="pill-btn pill-btn-secondary pill-btn-sm" style="text-decoration:none;">
-              📥 Unduh Template CSV/Excel
-            </a>
+            <button type="button" class="pill-btn pill-btn-secondary pill-btn-sm" onclick="AdminApp.downloadExcelTemplate()">
+              📥 Unduh Template Excel (.xlsx)
+            </button>
             <button type="button" class="pill-btn pill-btn-primary pill-btn-sm" onclick="AdminApp.openImportModal()">
-              📤 Upload & Import Soal
+              📤 Upload & Import Excel / CSV
             </button>
             <button type="button" class="pill-btn pill-btn-secondary pill-btn-sm" onclick="AdminApp.openAddQuestionModal()">
               + Buat Soal Manual
@@ -715,10 +717,27 @@
 
       <!-- TAB 5: DATA SISWA -->
       <section id="tab-students" class="admin-tab-content admin-content-inner" style="display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
           <div>
             <h1 style="font-size:1.6rem; font-weight:800; margin:0;">Direktori Siswa Peserta</h1>
-            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Daftar siswa yang pernah memulai atau menyelesaikan ujian tryout.</p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Kelola data siswa, rombel/kelas, dan riwayat pengerjaan tryout.</p>
+          </div>
+          <button type="button" class="pill-btn pill-btn-primary" onclick="AdminApp.openAddStudentModal()">
+            + Tambah Siswa Manual
+          </button>
+        </div>
+
+        <!-- Filter Siswa -->
+        <div class="nexus-card" style="margin-bottom:20px; padding:16px 20px;">
+          <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center;">
+            <div style="flex:1; min-width:220px;">
+              <input type="text" id="search-students" class="nexus-input" placeholder="Cari nama atau ID siswa..." style="padding:10px 16px;" oninput="AdminApp.filterStudents()">
+            </div>
+            <div style="min-width:180px;">
+              <select id="filter-students-class" class="nexus-select" style="padding:10px 16px;" onchange="AdminApp.filterStudents()">
+                <option value="ALL">Semua Kelas / Rombel</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -727,14 +746,15 @@
             <table class="nexus-table">
               <thead>
                 <tr>
-                  <th style="width:160px;">ID Siswa</th>
+                  <th style="width:140px;">ID Siswa</th>
                   <th>Nama Lengkap</th>
                   <th>Kelas / Rombel</th>
-                  <th>Tanggal Terdaftar</th>
+                  <th>Terdaftar</th>
+                  <th style="width:140px;">Aksi</th>
                 </tr>
               </thead>
               <tbody id="students-table-body">
-                <tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:30px;">Memuat direktori siswa...</td></tr>
+                <tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:30px;">Memuat direktori siswa...</td></tr>
               </tbody>
             </table>
           </div>
@@ -746,11 +766,27 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
           <div>
             <h1 style="font-size:1.6rem; font-weight:800; margin:0;">Rekap Hasil Tryout Siswa</h1>
-            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Laporan nilai, akurasi benar/salah, dan waktu pengerjaan otomatis.</p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Laporan nilai, akurasi pengerjaan, dan ekspor lembar nilai resmi ke Excel.</p>
           </div>
-          <button type="button" id="btn-export-results" class="pill-btn pill-btn-primary">
-            📥 Ekspor Hasil ke CSV
-          </button>
+          <div style="display:flex; gap:10px;">
+            <button type="button" id="btn-export-excel" class="pill-btn pill-btn-primary" onclick="AdminApp.exportResultsToExcel()">
+              📥 Ekspor Rekap ke Excel (.xlsx)
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Hasil -->
+        <div class="nexus-card" style="margin-bottom:20px; padding:16px 20px;">
+          <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center;">
+            <div style="flex:1; min-width:220px;">
+              <input type="text" id="search-results-student" class="nexus-input" placeholder="Cari nama siswa atau kelas..." style="padding:10px 16px;" oninput="AdminApp.filterResults()">
+            </div>
+            <div style="min-width:220px;">
+              <select id="filter-results-pkg" class="nexus-select" style="padding:10px 16px;" onchange="AdminApp.filterResults()">
+                <option value="ALL">Semua Paket Tryout</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <div class="nexus-card">
@@ -762,9 +798,9 @@
                   <th>Paket Tryout</th>
                   <th>Kategori</th>
                   <th>Skor Akhir</th>
-                  <th>Detail Jawaban</th>
-                  <th>Waktu Pengumpulan</th>
-                  <th>Status</th>
+                  <th>Ketepatan</th>
+                  <th>Waktu Selesai</th>
+                  <th style="width:200px;">Aksi</th>
                 </tr>
               </thead>
               <tbody id="results-table-body">
@@ -779,13 +815,16 @@
       <section id="tab-settings" class="admin-tab-content admin-content-inner" style="display:none;">
         <div style="margin-bottom:28px;">
           <h1 style="font-size:1.6rem; font-weight:800; margin:0;">Pengaturan Sistem & Integrasi</h1>
-          <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Konfigurasi URL Google Apps Script Web App dan parameter sistem.</p>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Konfigurasi URL Google Apps Script Web App, keamanan, dan kesehatan basis data.</p>
         </div>
 
-        <div class="grid-2-col" style="gap:24px;">
+        <div class="grid-2-col" style="gap:24px; margin-bottom:24px;">
           <!-- FORM PENGATURAN API -->
           <div class="nexus-card">
-            <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:16px;">Koneksi Google Apps Script API</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <h3 style="font-size:1.15rem; font-weight:700; margin:0;">Koneksi Google Apps Script API</h3>
+              <span id="api-connection-badge" class="nexus-badge badge-neutral">Status: Siap Diuji</span>
+            </div>
             <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:20px;">
               Aplikasi ini beroperasi menggunakan Google Apps Script sebagai serverless backend dan Google Spreadsheet sebagai basis data. Masukkan URL Web App yang telah dideploy dengan akses "Anyone" (Siapa saja).
             </p>
@@ -796,37 +835,44 @@
                   Google Apps Script Web App URL
                 </label>
                 <input type="url" id="setting-gas-url" class="nexus-input" placeholder="https://script.google.com/macros/s/.../exec">
-                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;" id="api-status-desc">
                   Jika dikosongkan, sistem berjalan otomatis dalam <strong>Mode Demo Offline</strong> dengan data bawaan tersimpan di memori browser.
                 </div>
               </div>
 
-              <div style="display:flex; gap:12px;">
+              <div style="display:flex; gap:12px; flex-wrap:wrap;">
                 <button type="submit" class="pill-btn pill-btn-primary">
                   💾 Simpan URL API
                 </button>
-                <button type="button" class="pill-btn pill-btn-secondary" onclick="window.TKA_API.toast('Menguji koneksi ke Apps Script...', 'info')">
-                  ⚡ Uji Koneksi
+                <button type="button" class="pill-btn pill-btn-secondary" onclick="AdminApp.testApiConnection()">
+                  ⚡ Uji Koneksi Live
+                </button>
+                <button type="button" class="pill-btn pill-btn-danger pill-btn-sm" onclick="AdminApp.resetDatabase()">
+                  🔄 Reset DB Lokal
                 </button>
               </div>
             </form>
           </div>
 
-          <!-- PANDUAN CEPAT -->
+          <!-- KONTROL PASSWORD ADMIN -->
           <div class="nexus-card">
-            <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:16px;">Panduan Penyiapan Database</h3>
-            <ul style="font-size:0.85rem; color:var(--text-muted); line-height:1.7; padding-left:20px; margin:0;">
-              <li>Buka file <code>Code.gs</code> di Google Apps Script pada Spreadsheet Anda.</li>
-              <li>Jalankan fungsi <code>setupDatabase()</code> satu kali untuk inisialisasi sheet otomatis.</li>
-              <li>Deploy sebagai <strong>Web App</strong> dengan:
-                <ul style="padding-left:16px; margin:4px 0;">
-                  <li>Execute as: <strong>Me (email Anda)</strong></li>
-                  <li>Who has access: <strong>Anyone (Siapa saja)</strong></li>
-                </ul>
-              </li>
-              <li>Salin URL Web App yang diakhiri <code>/exec</code> ke kolom di sebelah kiri.</li>
-              <li>File gambar diunggah langsung ke folder Google Drive otomatis melalui modal Pratinjau Soal.</li>
-            </ul>
+            <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:16px;">Ganti Password Administrator</h3>
+            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:20px;">
+              Perbarui kata sandi untuk akun administrator utama demi keamanan akses portal.
+            </p>
+            <form id="form-change-password" onsubmit="AdminApp.handleChangePassword(event)">
+              <div class="form-group" style="margin-bottom:14px;">
+                <label style="font-size:0.82rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Password Baru</label>
+                <input type="password" id="input-new-pass" class="nexus-input" placeholder="Minimal 6 karakter" required minlength="6">
+              </div>
+              <div class="form-group" style="margin-bottom:18px;">
+                <label style="font-size:0.82rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Konfirmasi Password Baru</label>
+                <input type="password" id="input-confirm-pass" class="nexus-input" placeholder="Ulangi password baru" required minlength="6">
+              </div>
+              <button type="submit" class="pill-btn pill-btn-primary">
+                🔒 Simpan Password Baru
+              </button>
+            </form>
           </div>
         </div>
       </section>
@@ -998,9 +1044,9 @@
             Pratinjau Tabel Excel (11 Kolom Standar):
           </div>
           <div style="display:flex; gap:10px;">
-            <a href="template_import_soal.csv" download="template_soal_tka_sd.csv" class="pill-btn pill-btn-primary pill-btn-sm" style="text-decoration:none;">
-              📥 Download File Template (.csv)
-            </a>
+            <button type="button" class="pill-btn pill-btn-primary pill-btn-sm" onclick="AdminApp.downloadExcelTemplate()">
+              📥 Unduh Template Excel (.xlsx)
+            </button>
             <button type="button" class="pill-btn pill-btn-secondary pill-btn-sm" onclick="document.getElementById('modal-template-excel').classList.remove('open'); AdminApp.openImportModal();">
               📤 Upload File Anda Sekarang
             </button>
@@ -1162,19 +1208,20 @@
         </div>
 
         <div style="margin-top:16px; padding:12px 16px; background:rgba(0,0,0,0.25); border-radius:10px; font-size:0.8rem; color:var(--text-muted); line-height:1.6;">
-          💡 <strong>Tips Pengisian Excel:</strong>
+          💡 <strong>Tips Pengisian Format Excel (.xlsx):</strong>
           <ul style="padding-left:18px; margin-top:4px;">
+            <li>Format template ini menggunakan <strong>Microsoft Excel (.xlsx)</strong> dengan 11 kolom tabel resmi.</li>
             <li>Untuk soal <strong>Pilihan Ganda Biasa</strong>, isi kolom Kunci dengan satu huruf (A/B/C/D).</li>
             <li>Untuk soal <strong>Pilihan Ganda Kompleks</strong>, isi kolom Bentuk dengan <code>Pilihan ganda kompleks (MCMA)</code> dan kolom Kunci dengan beberapa huruf dipisah koma (contoh: <code>A, B, D</code>).</li>
-            <li>Setelah diedit di Microsoft Excel atau Google Sheets, simpan dengan format <strong>CSV (Comma delimited) (*.csv)</strong> lalu upload melalui menu <em>Upload & Import Soal</em>.</li>
+            <li>File Excel dapat langsung diunggah melalui tombol <em>Upload & Import Excel / CSV</em> tanpa perlu diubah menjadi CSV terlebih dahulu.</li>
           </ul>
         </div>
       </div>
 
       <div class="nexus-modal-footer">
-        <a href="template_import_soal.csv" download="template_soal_tka_sd.csv" class="pill-btn pill-btn-primary">
-          📥 Unduh Template (.csv)
-        </a>
+        <button type="button" class="pill-btn pill-btn-primary" onclick="AdminApp.downloadExcelTemplate()">
+          📥 Unduh File Excel (.xlsx)
+        </button>
         <button type="button" class="pill-btn pill-btn-secondary" onclick="document.getElementById('modal-template-excel').classList.remove('open')">
           Tutup
         </button>
@@ -1183,12 +1230,12 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- MODAL 3: IMPORT SOAL CSV DENGAN LAPORAN VALIDASI PER BARIS -->
+  <!-- MODAL 3: IMPORT SOAL EXCEL / CSV DENGAN LAPORAN VALIDASI PER BARIS -->
   <!-- ===================================================================== -->
   <div class="nexus-modal" id="modal-import-csv">
     <div class="nexus-modal-card" style="max-width:960px; width:95%;">
       <div class="nexus-modal-header">
-        <h3 style="margin:0; font-size:1.2rem; font-weight:700;">Import Soal via CSV / Excel</h3>
+        <h3 style="margin:0; font-size:1.2rem; font-weight:700;">Import Soal via Excel (.xlsx) / CSV</h3>
         <button type="button" class="pill-btn pill-btn-secondary pill-btn-sm" onclick="document.getElementById('modal-import-csv').classList.remove('open')">✕</button>
       </div>
       <div class="nexus-modal-body" style="max-height:75vh; overflow-y:auto;">
@@ -1197,17 +1244,17 @@
             📋 Gunakan format tabel 11 kolom (<strong>No, Materi/Kompetensi, Level, Bentuk, Soal, A, B, C, D, Kunci, Pembahasan</strong>).
           </div>
           <button type="button" class="pill-btn pill-btn-outline pill-btn-sm" onclick="AdminApp.openTemplateModal()">
-            👁️ Lihat Contoh Tabel
+            👁️ Pratinjau Tabel Excel
           </button>
         </div>
 
         <div style="border:2px dashed var(--border-glass); border-radius:16px; padding:30px; text-align:center; margin-bottom:20px;">
-          <input type="file" id="input-import-file" accept=".csv" style="display:none;">
+          <input type="file" id="input-import-file" accept=".xlsx, .xls, .csv" style="display:none;">
           <label for="input-import-file" class="pill-btn pill-btn-primary" style="cursor:pointer; display:inline-flex;">
-            📁 Pilih File CSV Soal
+            📁 Pilih File Excel (.xlsx / .xls) atau CSV Soal
           </label>
           <div style="margin-top:10px; font-size:0.75rem; color:var(--text-muted);">
-            Gunakan format UTF-8 dengan pemisah koma (,).
+            Mendukung file Microsoft Excel (.xlsx/.xls) dan CSV dengan susunan 11 kolom.
           </div>
         </div>
 
@@ -1336,6 +1383,57 @@
           <button type="submit" class="pill-btn pill-btn-primary">Terbitkan Token</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 6: FORM TAMBAH / EDIT SISWA -->
+  <!-- ===================================================================== -->
+  <div class="nexus-modal" id="modal-student-form">
+    <div class="nexus-modal-card" style="max-width:500px;">
+      <div class="nexus-modal-header">
+        <h3 id="modal-student-title" style="margin:0; font-size:1.2rem; font-weight:700;">Tambah Siswa Manual</h3>
+        <button type="button" class="pill-btn pill-btn-secondary pill-btn-sm" onclick="document.getElementById('modal-student-form').classList.remove('open')">✕</button>
+      </div>
+      <form id="form-student" onsubmit="AdminApp.handleSaveStudent(event)">
+        <input type="hidden" id="form-student-id">
+        <div class="nexus-modal-body">
+          <div class="form-group" style="margin-bottom:16px;">
+            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Nama Lengkap Siswa</label>
+            <input type="text" id="form-student-name" class="nexus-input" placeholder="Misal: Ahmad Zaki Pratama" required>
+          </div>
+          <div class="form-group" style="margin-bottom:16px;">
+            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Kelas / Rombel</label>
+            <input type="text" id="form-student-class" class="nexus-input" placeholder="Misal: 5A atau 6 SD" required>
+          </div>
+        </div>
+        <div class="nexus-modal-footer">
+          <button type="button" class="pill-btn pill-btn-secondary" onclick="document.getElementById('modal-student-form').classList.remove('open')">Batal</button>
+          <button type="submit" class="pill-btn pill-btn-primary">Simpan Data Siswa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 7: DETAIL LEMBAR JAWABAN SISWA PER BUTIR SOAL -->
+  <!-- ===================================================================== -->
+  <div class="nexus-modal" id="modal-attempt-detail">
+    <div class="nexus-modal-card" style="max-width:880px; width:95%;">
+      <div class="nexus-modal-header">
+        <div>
+          <h3 style="margin:0; font-size:1.2rem; font-weight:700;" id="detail-student-header">Detail Lembar Jawaban Siswa</h3>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;" id="detail-sub-header">-</p>
+        </div>
+        <button type="button" class="pill-btn pill-btn-secondary pill-btn-sm" onclick="document.getElementById('modal-attempt-detail').classList.remove('open')">✕</button>
+      </div>
+      <div class="nexus-modal-body" style="max-height:75vh; overflow-y:auto;">
+        <div id="detail-summary-cards" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:12px; margin-bottom:20px;"></div>
+        <div id="detail-questions-container"></div>
+      </div>
+      <div class="nexus-modal-footer">
+        <button type="button" class="pill-btn pill-btn-secondary" onclick="document.getElementById('modal-attempt-detail').classList.remove('open')">Tutup</button>
+      </div>
     </div>
   </div>
 

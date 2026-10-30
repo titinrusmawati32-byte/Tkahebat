@@ -394,6 +394,76 @@ const API = {
         return { success: true };
       }
 
+      case 'admin_delete_token': {
+        db.tokens = db.tokens.filter(t => t.token_id !== payload.token_id);
+        this.saveMockDb(db);
+        return { deleted: true };
+      }
+
+      case 'admin_get_students': {
+        if (!db.students) db.students = [];
+        return db.students;
+      }
+
+      case 'admin_save_student': {
+        if (!db.students) db.students = [];
+        const sData = payload.student || {};
+        const sId = sData.student_id || ('STU-' + Math.random().toString(36).substring(2, 7).toUpperCase());
+        const stuObj = {
+          student_id: sId,
+          student_name: sData.student_name,
+          class_name: sData.class_name || '-',
+          created_at: sData.created_at || new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        const idx = db.students.findIndex(s => s.student_id === sId);
+        if (idx !== -1) {
+          db.students[idx] = stuObj;
+        } else {
+          db.students.push(stuObj);
+        }
+        this.saveMockDb(db);
+        return { student_id: sId };
+      }
+
+      case 'admin_delete_student': {
+        if (!db.students) db.students = [];
+        db.students = db.students.filter(s => s.student_id !== payload.student_id);
+        this.saveMockDb(db);
+        return { deleted: true };
+      }
+
+      case 'admin_reset_attempt': {
+        db.attempts = db.attempts.filter(a => a.attempt_id !== payload.attempt_id);
+        this.saveMockDb(db);
+        return { reset: true };
+      }
+
+      case 'admin_change_password': {
+        return { success: true };
+      }
+
+      case 'admin_get_settings': {
+        return [
+          { setting_key: 'APP_TITLE', setting_value: 'Tryout TKA SD' },
+          { setting_key: 'PASSING_SCORE', setting_value: '75' },
+          { setting_key: 'DEFAULT_ATTEMPT_LIMIT', setting_value: '1' }
+        ];
+      }
+
+      case 'admin_save_settings': {
+        return { success: true };
+      }
+
+      case 'ping': {
+        return {
+          status: 'online',
+          timestamp: new Date().toISOString(),
+          version: '1.0.0',
+          mode: 'mock_demo'
+        };
+      }
+
       // --- ADMIN ATTEMPTS ---
       case 'admin_get_attempts': {
         return db.attempts.filter(a => a.status === 'SUBMITTED').map(a => {
@@ -410,7 +480,9 @@ const API = {
             incorrect_count: a.incorrect_count,
             unanswered_count: a.unanswered_count,
             submitted_at: a.submitted_at,
-            status: a.status
+            status: a.status,
+            answers: a.answers || {},
+            result: a.result || null
           };
         });
       }

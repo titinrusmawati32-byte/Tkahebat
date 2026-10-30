@@ -402,6 +402,18 @@ function doPost(e) {
           result = adminToggleToken(payload.token_id, payload.active, adminUser);
           break;
 
+        case 'admin_delete_token':
+          result = adminDeleteToken(payload.token_id, adminUser);
+          break;
+
+        case 'admin_reset_attempt':
+          result = adminResetAttempt(payload.attempt_id, adminUser);
+          break;
+
+        case 'admin_change_password':
+          result = adminChangePassword(payload.new_password, adminUser);
+          break;
+
         case 'admin_get_students':
           result = adminGetStudents();
           break;
@@ -1345,6 +1357,37 @@ function adminToggleToken(tokenId, activeStatus, adminUser) {
   return { success: true };
 }
 
+function adminDeleteToken(tokenId, adminUser) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.TOKENS);
+  deleteSheetRow(sheet, 'token_id', tokenId);
+  recordAuditLog(adminUser.user_id, 'DELETE_TOKEN', 'TOKEN', tokenId);
+  return { deleted: true };
+}
+
+function adminResetAttempt(attemptId, adminUser) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.ATTEMPTS);
+  deleteSheetRow(sheet, 'attempt_id', attemptId);
+  recordAuditLog(adminUser.user_id, 'RESET_ATTEMPT', 'ATTEMPT', attemptId);
+  return { reset: true };
+}
+
+function adminChangePassword(newPassword, adminUser) {
+  if (!newPassword || newPassword.length < 6) {
+    throw new Error('Password baru minimal 6 karakter.');
+  }
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.USERS);
+  const newHash = hashPassword(newPassword);
+  updateSheetRow(sheet, 'user_id', adminUser.user_id, {
+    password_hash: newHash,
+    updated_at: new Date().toISOString()
+  });
+  recordAuditLog(adminUser.user_id, 'CHANGE_PASSWORD', 'USER', adminUser.user_id);
+  return { success: true };
+}
+
 /**
  * Kelola Data Siswa
  */
@@ -1428,7 +1471,9 @@ function adminGetAttempts(filters) {
       correct_count: a.correct_count,
       incorrect_count: a.incorrect_count,
       unanswered_count: a.unanswered_count,
-      status: a.status
+      status: a.status,
+      answers: a.answers_json ? JSON.parse(a.answers_json) : {},
+      result: a.result_json ? JSON.parse(a.result_json) : null
     };
   });
 }
