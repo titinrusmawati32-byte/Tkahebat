@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal - Tryout TKA SD</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Admin specific layout styling to mirror NexusBank dashboard reference */
+    .admin-layout-wrapper {
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+      background-color: var(--bg-base);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 229, 153, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.06) 0%, transparent 45%);
+    }
+
+    /* Vertical NexusBank Left Sidebar */
+    .nexus-sidebar {
+      width: 90px;
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-glass);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 0;
+      gap: 20px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      z-index: 100;
+    }
+
+    .nexus-brand-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #00E599 0%, #059669 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px var(--glow-mint);
+      margin-bottom: 16px;
+      cursor: pointer;
+    }
+
+    .nexus-brand-icon svg {
+      width: 26px;
+      height: 26px;
+      fill: #070e0e;
+    }
+
+    .sidebar-menu-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+      width: 100%;
+    }
+
+    .sidebar-nav-item {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: transparent;
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .sidebar-nav-item:hover {
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+      border-color: var(--border-glass);
+      transform: translateY(-2px);
+    }
+
+    .sidebar-nav-item.active {
+      background: rgba(0, 229, 153, 0.12);
+      color: var(--accent-primary);
+      border-color: rgba(0, 229, 153, 0.35);
+      box-shadow: 0 0 15px rgba(0, 229, 153, 0.2);
+    }
+
+    .sidebar-nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 14px;
+      bottom: 14px;
+      width: 4px;
+      border-radius: 0 4px 4px 0;
+      background: var(--accent-primary);
+    }
+
+    .sidebar-nav-item svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    /* Tooltip */
+    .sidebar-nav-item::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: 64px;
+      background: #0f1c1b;
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: all 0.2s ease;
+      border: 1px solid var(--border-glass);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      z-index: 1000;
+    }
+
+    .sidebar-nav-item:hover::after {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Admin Main Content Area */
+    .admin-main-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      max-height: 100vh;
+    }
+
+    .admin-topbar {
+      height: 76px;
+      padding: 0 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-glass);
+      background: rgba(11, 20, 20, 0.65);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 90;
+    }
+
+    .admin-topbar-search {
+      display: flex;
+      align-items: center;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-glass);
+      border-radius: 9999px;
+      padding: 8px 18px;
+      gap: 10px;
+      width: 320px;
+    }
+
+    .admin-topbar-search input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      font-size: 0.88rem;
+      width: 100%;
+    }
+
+    .admin-topbar-profile {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .admin-avatar-chip {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 14px 6px 6px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-glass);
+      border-radius: 9999px;
+    }
+
+    .admin-avatar-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #00E599 0%, #0284c7 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #070e0e;
+    }
+
+    .admin-content-inner {
+      padding: 32px 36px 60px 36px;
+      flex: 1;
+    }
+
+    /* Login View Overlay */
+    #admin-login-view {
+      min-height: 100vh;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background-color: var(--bg-base);
+      background-image: radial-gradient(circle at center, rgba(0, 229, 153, 0.12) 0%, transparent 60%);
+    }
+
+    /* Revenue Flow Bar Chart Widget (NexusBank Style) */
+    .nexus-chart-flow-container {
+      display: flex;
+      align-items: flex-end;
+      gap: 16px;
+      height: 190px;
+      padding: 20px 10px 10px 10px;
+      border-bottom: 1px solid var(--border-glass);
+    }
+
+    .nexus-chart-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .nexus-chart-bar {
+      width: 100%;
+      max-width: 42px;
+      border-radius: 12px 12px 6px 6px;
+      background: repeating-linear-gradient(45deg, rgba(0, 229, 153, 0.15), rgba(0, 229, 153, 0.15) 6px, rgba(0, 229, 153, 0.25) 6px, rgba(0, 229, 153, 0.25) 12px);
+      border: 1px solid rgba(0, 229, 153, 0.3);
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .nexus-chart-bar.highlight {
+      background: linear-gradient(180deg, #A78BFA 0%, #7C3AED 100%);
+      box-shadow: 0 0 20px rgba(167, 139, 250, 0.4);
+      border: 1px solid #C4B5FD;
+    }
+
+    .nexus-chart-bar.highlight::after {
+      content: '';
+      position: absolute;
+      top: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 14px;
+      background: #FFFFFF;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #C4B5FD;
+    }
+
+    .nexus-chart-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Circular Progress Doughnut Visual */
+    .donut-visual-wrapper {
+      position: relative;
+      width: 130px;
+      height: 130px;
+    }
+
+    .donut-svg {
+      transform: rotate(-90deg);
+      width: 100%;
+      height: 100%;
+    }
+
+    .donut-circle-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.06);
+      stroke-width: 14;
+    }
+
+    .donut-circle-val {
+      fill: none;
+      stroke-width: 14;
+      stroke-linecap: round;
+      transition: stroke-dasharray 0.5s ease;
+    }
+
+    .donut-center-info {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @media (max-width: 900px) {
+      .nexus-sidebar {
+        width: 70px;
+        padding: 16px 0;
+      }
+      .admin-topbar {
+        padding: 0 20px;
+      }
+      .admin-content-inner {
+        padding: 20px 20px 40px 20px;
+      }
+      .admin-topbar-search {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===================================================================== -->
+  <!-- VIEW: ADMIN LOGIN -->
+  <!-- ===================================================================== -->
+  <div id="admin-login-view">
+    <div class="glass-card" style="width: 100%; max-width: 440px; padding: 40px; text-align: left;">
+      <div style="display:flex; align-items:center; gap:14px; margin-bottom:24px;">
+        <div class="nexus-brand-icon" style="margin-bottom:0; width:44px; height:44px;">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <div>
+          <h2 style="font-size:1.35rem; font-weight:800; color:var(--text-main); margin:0;">Admin Portal</h2>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin:0;">Tryout TKA SD Dashboard</p>
+        </div>
+      </div>
+
+      <p style="font-size:0.88rem; color:var(--text-muted); line-height:1.5; margin-bottom:24px;">
+        Masuk untuk mengelola bank soal, paket ujian, token siswa, dan memantau hasil tryout secara real-time.
+      </p>
+
+      <form id="admin-login-form">
+        <div class="form-group" style="margin-bottom:16px;">
+          <label style="font-size:0.82rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:8px;">Username</label>
+          <input type="text" id="admin-username" class="nexus-input" placeholder="Masukkan username" value="admin" required autofocus>
+        </div>
+
+        <div class="form-group" style="margin-bottom:24px;">
+          <label style="font-size:0.82rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:8px;">Password</label>
+          <input type="password" id="admin-password" class="nexus-input" placeholder="Masukkan password" value="AdminTKA2026!" required>
+          <div style="margin-top:8px; font-size:0.75rem; color:var(--accent-primary);">
+            Default: <code>admin</code> / <code>AdminTKA2026!</code>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-admin-login" class="pill-btn pill-btn-primary" style="width:100%; justify-content:center; padding:14px;">
+          Masuk Dashboard
+        </button>
+      </form>
+
+      <div style="margin-top:24px; text-align:center;">
+        <a href="index.html" style="font-size:0.82rem; color:var(--text-muted); text-decoration:none;">
+          ← Kembali ke Portal Ujian Siswa
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- VIEW: ADMIN DASHBOARD APP LAYOUT -->
+  <!-- ===================================================================== -->
+  <div id="admin-app-layout" class="admin-layout-wrapper" style="display:none;">
+    
+    <!-- LEFT VERTICAL ICON SIDEBAR (NexusBank Reference Style) -->
+    <aside class="nexus-sidebar" id="sidebar-nav">
+      <div class="nexus-brand-icon" title="Tryout TKA SD">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+
+      <nav class="sidebar-menu-group">
+        <button class="sidebar-nav-item active" data-tab="tab-dashboard" data-tooltip="Dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        </button>
+        <button class="sidebar-nav-item" data-tab="tab-questions" data-tooltip="Bank Soal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        </button>
+        <button class="sidebar-nav-item" data-tab="tab-packages" data-tooltip="Paket Tryout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+        </button>
+        <button class="sidebar-nav-item" data-tab="tab-tokens" data-tooltip="Token Siswa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-1-1l-3 3m2 2l-3 3m-2-2l-3 3m2 2l-3 3m-2-2l-3 3m2 2l-3 3m-2-2l-3 3"></path><circle cx="7.5" cy="16.5" r="5.5"></circle></svg>
+        </button>
+        <button class="sidebar-nav-item" data-tab="tab-students" data-tooltip="Data Siswa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </button>
+        <button class="sidebar-nav-item" data-tab="tab-results" data-tooltip="Hasil & Rekap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        </button>
+        <button class="sidebar-nav-item" data-tab="tab-settings" data-tooltip="Pengaturan & API">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+      </nav>
+
+      <button id="btn-logout" class="sidebar-nav-item" data-tooltip="Keluar" style="color:var(--accent-rose);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+      </button>
+    </aside>
+
+    <!-- RIGHT MAIN CONTENT -->
+    <main class="admin-main-area">
+      <!-- TOP BAR -->
+      <header class="admin-topbar">
+        <div class="admin-topbar-search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" placeholder="Cari soal, paket, siswa..." onkeydown="if(event.key==='Enter'){ AdminApp.switchTab('tab-questions'); document.getElementById('search-q').value=this.value; AdminApp.loadQuestions(); }">
+        </div>
+
+        <div class="admin-topbar-profile">
+          <a href="index.html" class="pill-btn pill-btn-outline pill-btn-sm" style="text-decoration:none;">
+            🚀 Buka Portal Siswa
+          </a>
+
+          <div class="admin-avatar-chip">
+            <div class="admin-avatar-img">A</div>
+            <div>
+              <div style="font-size:0.85rem; font-weight:700; color:var(--text-main);" id="admin-user-display">Administrator</div>
+              <div style="font-size:0.7rem; color:var(--accent-primary);">Super Admin</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- TAB 1: DASHBOARD -->
+      <section id="tab-dashboard" class="admin-tab-content admin-content-inner">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:28px;">
+          <div>
+            <h1 style="font-size:1.75rem; font-weight:800; margin:0;">Dashboard Ringkasan</h1>
+            <p style="font-size:0.88rem; color:var(--text-muted); margin-top:4px;">Pemantauan performa tryout, bank soal, dan keaktifan siswa TKA SD.</p>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button type="button" class="pill-btn pill-btn-primary pill-btn-sm" onclick="AdminApp.openGenerateTokenModal()">+ Buat Token</button>
+            <button type="button" class="pill-btn pill-btn-secondary pill-btn-sm" onclick="AdminApp.openAddQuestionModal()">+ Buat Soal</button>
+          </div>
+        </div>
+
+        <!-- 6 METRICS CARDS -->
+        <div class="metrics-grid" style="margin-bottom:28px;">
+          <div class="nexus-card">
+            <div class="metric-label">📦 Total Paket Tryout</div>
+            <div class="metric-value" id="stat-pkg-count">0</div>
+            <div style="font-size:0.75rem; color:var(--accent-primary); margin-top:6px;">Aktif untuk siswa</div>
+          </div>
+          <div class="nexus-card">
+            <div class="metric-label">📚 Bank Soal Tersimpan</div>
+            <div class="metric-value" id="stat-qst-count">0</div>
+            <div style="font-size:0.75rem; color:var(--accent-cyan); margin-top:6px;">Literasi & Numerasi</div>
+          </div>
+          <div class="nexus-card">
+            <div class="metric-label">🔑 Token Diterbitkan</div>
+            <div class="metric-value" id="stat-tkn-count">0</div>
+            <div style="font-size:0.75rem; color:var(--accent-mint); margin-top:6px;">Akses ujian</div>
+          </div>
+          <div class="nexus-card">
+            <div class="metric-label">👥 Total Siswa Terdaftar</div>
+            <div class="metric-value" id="stat-stu-count">0</div>
+            <div style="font-size:0.75rem; color:var(--accent-purple); margin-top:6px;">Data peserta unik</div>
+          </div>
+          <div class="nexus-card">
+            <div class="metric-label">📝 Ujian Selesai</div>
+            <div class="metric-value" id="stat-att-count">0</div>
+            <div style="font-size:0.75rem; color:var(--accent-primary); margin-top:6px;">Telah dikoreksi</div>
+          </div>
+          <div class="nexus-card">
+            <div class="metric-label">⭐ Rata-rata Skor</div>
+            <div class="metric-value" id="stat-avg-score">0</div>
+            <div style="font-size:0.75rem; color:var(--accent-amber); margin-top:6px;">Skala 100</div>
+          </div>
+        </div>
+
+        <!-- CHARTS SECTION (NexusBank Reference Style) -->
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:24px; margin-bottom:28px;">
+          <!-- REVENUE FLOW STYLE BAR CHART -->
+          <div class="nexus-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <div>
+                <h3 style="font-size:1.1rem; font-weight:700; margin:0;">Distribusi Pengerjaan Ujian</h3>
+                <p style="font-size:0.78rem; color:var(--text-muted); margin:2px 0 0 0;">Frekuensi tryout per gelombang/bulan</p>
+              </div>
+              <span class="nexus-badge badge-mint">+24% Minggu Ini</span>
+            </div>
+
+            <div class="nexus-chart-flow-container">
+              <div class="nexus-chart-col">
+                <div class="nexus-chart-bar" style="height:45%;"></div>
+                <span class="nexus-chart-label">Jan</span>
+              </div>
+              <div class="nexus-chart-col">
+                <div class="nexus-chart-bar" style="height:60%;"></div>
+                <span class="nexus-chart-label">Feb</span>
+              </div>
+              <div class="nexus-chart-col">
+                <div class="nexus-chart-bar" style="height:75%;"></div>
+                <span class="nexus-chart-label">Mar</span>
+              </div>
+              <div class="nexus-chart-col">
+                <div class="nexus-chart-bar" style="height:55%;"></div>
+                <span class="nexus-chart-label">Apr</span>
+              </div>
+              <div class="nexus-chart-col">
+                <div class="nexus-chart-bar highlight" style="height:90%;"></div>
+                <span class="nexus-chart-label">Mei</span>
+              </div>
+              <div class="nexus-chart-col">
+                <div class="nexus-chart-bar" style="height:70%;"></div>
+                <span class="nexus-chart-label">Jun</span>
+              </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; font-size:0.8rem; color:var(--text-muted);">
+              <div>🔹 Literasi: <strong>55%</strong></div>
+              <div>🟣 Numerasi: <strong>45%</strong></div>
+              <div>Target Kelulusan: <strong style="color:var(--accent-primary);">KKM ≥ 75</strong></div>
+            </div>
+          </div>
+
+          <!-- PROPORSI BIDANG STUDI DOUGHNUT -->
+          <div class="nexus-card" style="display:flex; flex-direction:column; justify-content:space-between;">
+            <h3 style="font-size:1.1rem; font-weight:700; margin:0 0 14px 0;">Komposisi Materi</h3>
+            
+            <div style="display:flex; align-items:center; justify-content:center; gap:20px; flex:1;">
+              <div class="donut-visual-wrapper">
+                <svg class="donut-svg" viewBox="0 0 100 100">
+                  <circle class="donut-circle-bg" cx="50" cy="50" r="38"></circle>
+                  <circle class="donut-circle-val" cx="50" cy="50" r="38" stroke="#00E599" stroke-dasharray="140 240" stroke-dashoffset="0"></circle>
+                  <circle class="donut-circle-val" cx="50" cy="50" r="38" stroke="#A78BFA" stroke-dasharray="90 240" stroke-dashoffset="-145"></circle>
+                </svg>
+                <div class="donut-center-info">
+                  <span style="font-size:1.25rem; font-weight:800; color:var(--text-main);">100%</span>
+                  <span style="font-size:0.65rem; color:var(--text-muted);">TKA SD</span>
+                </div>
+              </div>
+
+              <div style="font-size:0.8rem; display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="width:10px; height:10px; border-radius:50%; background:#00E599;"></span>
+                  <span>Literasi (55%)</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="width:10px; height:10px; border-radius:50%; background:#A78BFA;"></span>
+                  <span>Numerasi (45%)</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:rgba(0,0,0,0.25); border-radius:10px; padding:10px 14px; font-size:0.75rem; color:var(--text-muted); margin-top:14px;">
+              💡 Soal dapat mencakup teks narasi, bacaan tabel, penalaran logika, dan geometri visual.
+            </div>
+          </div>
+        </div>
+
+        <!-- RECENT ACTIVITY TABLE -->
+        <div class="nexus-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+            <h3 style="font-size:1.15rem; font-weight:700; margin:0;">Riwayat Ujian Terbaru</h3>
+            <button type="button" class="pill-btn pill-btn-outline pill-btn-sm" onclick="AdminApp.switchTab('tab-results')">Lihat Semua Hasil →</button>
+          </div>
+          <div class="table-responsive">
+            <table class="nexus-table">
+              <thead>
+                <tr>
+                  <th>Nama Siswa & Kelas</th>
+                  <th>Paket Tryout</th>
+                  <th>Nilai Akhir</th>
+                  <th>Ketepatan</th>
+                  <th>Waktu Pengumpulan</th>
+                </tr>
+              </thead>
+              <tbody id="dashboard-recent-table">
+                <tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:24px;">Memuat riwayat ujian...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: BANK SOAL -->
+      <section id="tab-questions" class="admin-tab-content admin-content-inner" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+          <div>
+            <h1 style="font-size:1.6rem; font-weight:800; margin:0;">Bank Soal TKA SD</h1>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Kelola soal Literasi & Numerasi, opsi jawaban, pembahasan, dan media gambar.</p>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <a href="template_import_soal.csv" download class="pill-btn pill-btn-outline pill-btn-sm" style="text-decoration:none;">
+              📄 Unduh Template CSV
+            </a>
+            <button type="button" class="pill-btn pill-btn-secondary pill-btn-sm" onclick="AdminApp.openImportModal()">
+              📥 Import CSV/Excel
+            </button>
+            <button type="button" class="pill-btn pill-btn-primary pill-btn-sm" onclick="AdminApp.openAddQuestionModal()">
+              + Tambah Soal Manual
+            </button>
+          </div>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="nexus-card" style="margin-bottom:20px; padding:16px 20px;">
+          <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center;">
+            <div style="flex:1; min-width:220px;">
+              <input type="text" id="search-q" class="nexus-input" placeholder="Cari isi teks soal atau kode..." style="padding:10px 16px;">
+            </div>
+            <div style="min-width:180px;">
+              <select id="filter-q-category" class="nexus-select" style="padding:10px 16px;">
+                <option value="ALL">Semua Kategori (Semua)</option>
+                <option value="LITERASI">Literasi</option>
+                <option value="NUMERASI">Numerasi</option>
+              </select>
+            </div>
+            <div style="min-width:180px;">
+              <select id="filter-q-type" class="nexus-select" style="padding:10px 16px;">
+                <option value="ALL">Semua Jenis Jawaban</option>
+                <option value="MULTIPLE_CHOICE">Pilihan Ganda Tunggal</option>
+                <option value="MULTI_SELECT">Pilihan Ganda Kompleks</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUESTIONS TABLE -->
+        <div class="nexus-card">
+          <div class="table-responsive">
+            <table class="nexus-table">
+              <thead>
+                <tr>
+                  <th style="width:110px;">Kode</th>
+                  <th style="width:130px;">Kategori</th>
+                  <th>Isi Teks Batang Soal</th>
+                  <th style="width:120px;">Jenis</th>
+                  <th style="width:90px;">Kunci</th>
+                  <th style="width:230px;">Aksi & Media</th>
+                </tr>
+              </thead>
+              <tbody id="questions-table-body">
+                <tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:30px;">Memuat bank soal...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: PAKET TRYOUT -->
+      <section id="tab-packages" class="admin-tab-content admin-content-inner" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+          <div>
+            <h1 style="font-size:1.6rem; font-weight:800; margin:0;">Paket Ujian Tryout</h1>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Atur judul paket, durasi, pembatasan pengerjaan, dan kombinasi butir soal.</p>
+          </div>
+          <button type="button" class="pill-btn pill-btn-primary" onclick="AdminApp.openAddPackageModal()">
+            + Buat Paket Baru
+          </button>
+        </div>
+
+        <div class="grid-2-col" id="packages-grid" style="grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));">
+          <div class="nexus-card text-center text-muted" style="padding:40px;">Memuat paket ujian...</div>
+        </div>
+      </section>
+
+      <!-- TAB 4: TOKEN SISWA -->
+      <section id="tab-tokens" class="admin-tab-content admin-content-inner" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+          <div>
+            <h1 style="font-size:1.6rem; font-weight:800; margin:0;">Manajemen Token Siswa</h1>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Token autentikasi acak untuk mengontrol akses pengerjaan paket tryout.</p>
+          </div>
+          <button type="button" class="pill-btn pill-btn-primary" onclick="AdminApp.openGenerateTokenModal()">
+            + Buat Token Baru
+          </button>
+        </div>
+
+        <div class="nexus-card">
+          <div class="table-responsive">
+            <table class="nexus-table">
+              <thead>
+                <tr>
+                  <th>Kode Token</th>
+                  <th>Paket Tryout</th>
+                  <th>Kouta Terpakai</th>
+                  <th>Status</th>
+                  <th>Masa Berlaku</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tokens-table-body">
+                <tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:30px;">Memuat data token...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: DATA SISWA -->
+      <section id="tab-students" class="admin-tab-content admin-content-inner" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+          <div>
+            <h1 style="font-size:1.6rem; font-weight:800; margin:0;">Direktori Siswa Peserta</h1>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Daftar siswa yang pernah memulai atau menyelesaikan ujian tryout.</p>
+          </div>
+        </div>
+
+        <div class="nexus-card">
+          <div class="table-responsive">
+            <table class="nexus-table">
+              <thead>
+                <tr>
+                  <th style="width:160px;">ID Siswa</th>
+                  <th>Nama Lengkap</th>
+                  <th>Kelas / Rombel</th>
+                  <th>Tanggal Terdaftar</th>
+                </tr>
+              </thead>
+              <tbody id="students-table-body">
+                <tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:30px;">Memuat direktori siswa...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: HASIL UJIAN -->
+      <section id="tab-results" class="admin-tab-content admin-content-inner" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+          <div>
+            <h1 style="font-size:1.6rem; font-weight:800; margin:0;">Rekap Hasil Tryout Siswa</h1>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Laporan nilai, akurasi benar/salah, dan waktu pengerjaan otomatis.</p>
+          </div>
+          <button type="button" id="btn-export-results" class="pill-btn pill-btn-primary">
+            📥 Ekspor Hasil ke CSV
+          </button>
+        </div>
+
+        <div class="nexus-card">
+          <div class="table-responsive">
+            <table class="nexus-table">
+              <thead>
+                <tr>
+                  <th>Nama Siswa & Kelas</th>
+                  <th>Paket Tryout</th>
+                  <th>Kategori</th>
+                  <th>Skor Akhir</th>
+                  <th>Detail Jawaban</th>
+                  <th>Waktu Pengumpulan</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="results-table-body">
+                <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:30px;">Memuat rekap nilai...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 7: PENGATURAN & AUDIT LOG -->
+      <section id="tab-settings" class="admin-tab-content admin-content-inner" style="display:none;">
+        <div style="margin-bottom:28px;">
+          <h1 style="font-size:1.6rem; font-weight:800; margin:0;">Pengaturan Sistem & Integrasi</h1>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Konfigurasi URL Google Apps Script Web App dan parameter sistem.</p>
+        </div>
+
+        <div class="grid-2-col" style="gap:24px;">
+          <!-- FORM PENGATURAN API -->
+          <div class="nexus-card">
+            <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:16px;">Koneksi Google Apps Script API</h3>
+            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:20px;">
+              Aplikasi ini beroperasi menggunakan Google Apps Script sebagai serverless backend dan Google Spreadsheet sebagai basis data. Masukkan URL Web App yang telah dideploy dengan akses "Anyone" (Siapa saja).
+            </p>
+
+            <form id="form-settings">
+              <div class="form-group" style="margin-bottom:20px;">
+                <label style="font-size:0.82rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:8px;">
+                  Google Apps Script Web App URL
+                </label>
+                <input type="url" id="setting-gas-url" class="nexus-input" placeholder="https://script.google.com/macros/s/.../exec">
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
+                  Jika dikosongkan, sistem berjalan otomatis dalam <strong>Mode Demo Offline</strong> dengan data bawaan tersimpan di memori browser.
+                </div>
+              </div>
+
+              <div style="display:flex; gap:12px;">
+                <button type="submit" class="pill-btn pill-btn-primary">
+                  💾 Simpan URL API
+                </button>
+                <button type="button" class="pill-btn pill-btn-secondary" onclick="window.TKA_API.toast('Menguji koneksi ke Apps Script...', 'info')">
+                  ⚡ Uji Koneksi
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- PANDUAN CEPAT -->
+          <div class="nexus-card">
+            <h3 style="font-size:1.15rem; font-weight:700; margin-bottom:16px;">Panduan Penyiapan Database</h3>
+            <ul style="font-size:0.85rem; color:var(--text-muted); line-height:1.7; padding-left:20px; margin:0;">
+              <li>Buka file <code>Code.gs</code> di Google Apps Script pada Spreadsheet Anda.</li>
+              <li>Jalankan fungsi <code>setupDatabase()</code> satu kali untuk inisialisasi sheet otomatis.</li>
+              <li>Deploy sebagai <strong>Web App</strong> dengan:
+                <ul style="padding-left:16px; margin:4px 0;">
+                  <li>Execute as: <strong>Me (email Anda)</strong></li>
+                  <li>Who has access: <strong>Anyone (Siapa saja)</strong></li>
+                </ul>
+              </li>
+              <li>Salin URL Web App yang diakhiri <code>/exec</code> ke kolom di sebelah kiri.</li>
+              <li>File gambar diunggah langsung ke folder Google Drive otomatis melalui modal Pratinjau Soal.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 1: FORM TAMBAH / EDIT SOAL -->
+  <!-- ===================================================================== -->
+  <div class="nexus-modal" id="modal-question-form">
+    <div class="nexus-modal-card" style="max-width:720px;">
+      <div class="nexus-modal-header">
+        <h3 id="modal-q-title" style="margin:0; font-size:1.2rem; font-weight:700;">Tambah Soal Baru</h3>
+        <button type="button" class="pill-btn pill-btn-secondary pill-btn-sm" onclick="document.getElementById('modal-question-form').classList.remove('open')">✕</button>
+      </div>
+      <form id="form-question">
+        <input type="hidden" id="form-q-id">
+        <div class="nexus-modal-body" style="max-height:75vh; overflow-y:auto;">
+          <div class="grid-2-col" style="gap:16px; margin-bottom:16px;">
+            <div class="form-group">
+              <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Kode Soal</label>
+              <input type="text" id="form-q-code" class="nexus-input" placeholder="Misal: LIT-001 atau NUM-005" required>
+            </div>
+            <div class="form-group">
+              <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Kategori Bidang</label>
+              <select id="form-q-category" class="nexus-select" required>
+                <option value="LITERASI">Literasi</option>
+                <option value="NUMERASI">Numerasi</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid-2-col" style="gap:16px; margin-bottom:16px;">
+            <div class="form-group">
+              <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Jenis Soal</label>
+              <select id="form-q-type" class="nexus-select" required>
+                <option value="MULTIPLE_CHOICE">Pilihan Ganda Biasa (1 Jawaban Benar)</option>
+                <option value="MULTI_SELECT">Pilihan Ganda Kompleks (Bisa >1 Jawaban, misal A,C)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Tingkat Kesulitan</label>
+              <select id="form-q-diff" class="nexus-select">
+                <option value="MUDAH">Mudah</option>
+                <option value="SEDANG" selected>Sedang</option>
+                <option value="SULIT">Sulit</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:16px;">
+            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Batang / Teks Soal</label>
+            <textarea id="form-q-text" class="nexus-textarea" rows="4" placeholder="Tuliskan teks narasi atau pertanyaan soal..." required></textarea>
+          </div>
+
+          <div style="font-size:0.85rem; font-weight:700; color:var(--text-main); margin-bottom:12px;">Pilihan Jawaban (A, B, C, D)</div>
+          <div class="form-group" style="margin-bottom:10px;">
+            <input type="text" id="form-opt-a" class="nexus-input" placeholder="Teks Pilihan A" required>
+          </div>
+          <div class="form-group" style="margin-bottom:10px;">
+            <input type="text" id="form-opt-b" class="nexus-input" placeholder="Teks Pilihan B" required>
+          </div>
+          <div class="form-group" style="margin-bottom:10px;">
+            <input type="text" id="form-opt-c" class="nexus-input" placeholder="Teks Pilihan C" required>
+          </div>
+          <div class="form-group" style="margin-bottom:16px;">
+            <input type="text" id="form-opt-d" class="nexus-input" placeholder="Teks Pilihan D" required>
+          </div>
+
+          <div class="grid-2-col" style="gap:16px; margin-bottom:16px;">
+            <div class="form-group">
+              <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Kunci Jawaban Benar</label>
+              <input type="text" id="form-q-correct" class="nexus-input" placeholder="Misal: A atau A,C jika kompleks" required style="font-family:var(--font-mono); text-transform:uppercase;">
+            </div>
+            <div class="form-group">
+              <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Media Gambar</label>
+              <div style="font-size:0.75rem; color:var(--text-muted); padding-top:10px;">
+                * Gambar dapat diunggah dari perangkat setelah soal disimpan melalui tombol <strong>👁️ Pratinjau & Media</strong>.
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Penjelasan / Pembahasan Soal</label>
+            <textarea id="form-q-exp" class="nexus-textarea" rows="3" placeholder="Tuliskan pembahasan langkah demi langkah untuk siswa..."></textarea>
+          </div>
+        </div>
+        <div class="nexus-modal-footer">
+          <button type="button" class="pill-btn pill-btn-secondary" onclick="document.getElementById('modal-question-form').classList.remove('open')">Batal</button>
+          <button type="submit" class="pill-btn pill-btn-primary">Simpan Soal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 2: PRATINJAU SOAL & MEDIA MANAGER GAMBAR (Sesuai PRD) -->
+  <!-- ===================================================================== -->
+  <div class="nexus-modal" id="modal-question-preview">
+    <div class="nexus-modal-card" style="max-width:760px;">
+      <div class="nexus-modal-header">
+        <div>
+          <h3 style="margin:0; font-size:1.2rem; font-weight:700;">Pratinjau Soal & Kelola Gambar</h3>
+          <span id="preview-modal-code" style="font-size:0.78rem; color:var(--accent-primary); font-family:var(--font-mono);"></span>
+        </div>
+        <button type="button" class="pill-btn pill-btn-secondary pill-btn-sm" onclick="document.getElementById('modal-question-preview').classList.remove('open')">✕</button>
+      </div>
+      <div class="nexus-modal-body" style="max-height:75vh; overflow-y:auto;">
+        <!-- Batang Soal Teks & Upload Gambar -->
+        <div style="margin-bottom:20px;">
+          <div style="font-size:0.85rem; font-weight:700; color:var(--text-muted); margin-bottom:8px;">BATANG SOAL:</div>
+          <div id="preview-q-text" style="font-size:1rem; line-height:1.6; color:var(--text-main); margin-bottom:12px;"></div>
+          
+          <div id="preview-prompt-box" style="display:none; margin-bottom:14px;">
+            <div class="question-media-container">
+              <img id="preview-prompt-img" class="question-media-img" alt="Gambar Batang Soal">
+            </div>
+            <button type="button" class="pill-btn pill-btn-danger pill-btn-sm" style="margin-top:8px;" onclick="AdminApp.removeImage('prompt')">Hapus Foto Batang Soal</button>
+          </div>
+
+          <div>
+            <label class="pill-btn pill-btn-outline pill-btn-sm" style="cursor:pointer; display:inline-flex;">
+              📷 Upload Foto Batang Soal (PNG/JPG)
+              <input type="file" accept="image/*" style="display:none;" onchange="AdminApp.handleImageUpload(event, 'prompt')">
+            </label>
+          </div>
+        </div>
+
+        <hr style="border:none; border-top:1px solid var(--border-glass); margin:20px 0;">
+
+        <!-- Opsi Jawaban & Media Tiap Opsi -->
+        <div style="margin-bottom:20px;">
+          <div style="font-size:0.85rem; font-weight:700; color:var(--text-muted); margin-bottom:12px;">OPSI PILIHAN JAWABAN:</div>
+          <div id="preview-options-box"></div>
+        </div>
+
+        <hr style="border:none; border-top:1px solid var(--border-glass); margin:20px 0;">
+
+        <!-- Pembahasan -->
+        <div>
+          <div style="font-size:0.85rem; font-weight:700; color:var(--text-muted); margin-bottom:8px;">PEMBAHASAN RESMI:</div>
+          <div id="preview-explanation-text" style="font-size:0.88rem; line-height:1.6; color:var(--accent-mint); background:rgba(0,229,153,0.06); padding:14px; border-radius:10px;"></div>
+        </div>
+      </div>
+      <div class="nexus-modal-footer">
+        <button type="button" class="pill-btn pill-btn-secondary" onclick="document.getElementById('modal-question-preview').classList.remove('open')">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 3: IMPORT SOAL CSV DENGAN LAPORAN VALIDASI PER BARIS -->
+  <!-- ===================================================================== -->
+  <div class="nexus-modal" id="modal-import-csv">
+    <div class="nexus-modal-card" style="max-width:800px;">
+      <div class="nexus-modal-header">
+        <h3 style="margin:0; font-size:1.2rem; font-weight:700;">Import Soal via CSV / Excel</h3>
+        <button type="button" class="pill-btn pill-btn-secondary pill-btn-sm" onclick="document.getElementById('modal-import-csv').classList.remove('open')">✕</button>
+      </div>
+      <div class="nexus-modal-body" style="max-height:75vh; overflow-y:auto;">
+        <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
+          Pilih file CSV sesuai format template. Sistem akan memvalidasi kolom wajib, kategori (LITERASI/NUMERASI), batang soal, dan kunci jawaban per baris.
+        </p>
+
+        <div style="border:2px dashed var(--border-glass); border-radius:16px; padding:30px; text-align:center; margin-bottom:20px;">
+          <input type="file" id="input-import-file" accept=".csv" style="display:none;">
+          <label for="input-import-file" class="pill-btn pill-btn-primary" style="cursor:pointer; display:inline-flex;">
+            📁 Pilih File CSV Soal
+          </label>
+          <div style="margin-top:10px; font-size:0.75rem; color:var(--text-muted);">
+            Gunakan format UTF-8 dengan pemisah koma (,).
+          </div>
+        </div>
+
+        <!-- Laporan Hasil Validasi Per Baris -->
+        <div id="import-report-box" style="display:none;">
+          <div id="import-summary-text" style="font-size:0.9rem; margin-bottom:14px; padding:12px 16px; background:rgba(0,0,0,0.3); border-radius:10px;"></div>
+          
+          <div class="table-responsive" style="max-height:260px; overflow-y:auto;">
+            <table class="nexus-table" style="font-size:0.8rem;">
+              <thead>
+                <tr>
+                  <th style="width:90px;">Baris</th>
+                  <th style="width:120px;">Kode Soal</th>
+                  <th style="width:100px;">Status</th>
+                  <th>Keterangan Validasi</th>
+                </tr>
+              </thead>
+              <tbody id="import-report-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="nexus-modal-footer">
+        <button type="button" class="pill-btn pill-btn-secondary" onclick="document.getElementById('modal-import-csv').classList.remove('open')">Batal</button>
+        <button type="button" id="btn-confirm-import" class="pill-btn pill-btn-primary" style="display:none;" onclick="AdminApp.executeBatchImport()">
+          Terbitkan Soal Valid
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 4: BUAT / EDIT PAKET TRYOUT -->
+  <!-- ===================================================================== -->
+  <div class="nexus-modal" id="modal-package-form">
+    <div class="nexus-modal-card" style="max-width:750px;">
+      <div class="nexus-modal-header">
+        <h3 id="modal-pkg-title" style="margin:0; font-size:1.2rem; font-weight:700;">Buat Paket Ujian</h3>
+        <button type="button" class="pill-btn pill-btn-secondary pill-btn-sm" onclick="document.getElementById('modal-package-form').classList.remove('open')">✕</button>
+      </div>
+      <form id="form-package">
+        <input type="hidden" id="form-pkg-id">
+        <div class="nexus-modal-body" style="max-height:75vh; overflow-y:auto;">
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Judul Paket Ujian</label>
+            <input type="text" id="form-pkg-title-input" class="nexus-input" placeholder="Misal: Tryout Akbar TKA SD 2026 Gelombang 1" required>
+          </div>
+
+          <div class="form-group" style="margin-bottom:14px;">
+            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Deskripsi Singkat</label>
+            <textarea id="form-pkg-desc" class="nexus-textarea" rows="2" placeholder="Petunjuk khusus atau keterangan paket..."></textarea>
+          </div>
+
+          <div class="grid-2-col" style="gap:16px; margin-bottom:16px;">
+            <div class="form-group">
+              <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Kategori Materi</label>
+              <select id="form-pkg-category" class="nexus-select">
+                <option value="LITERASI & NUMERASI">Literasi & Numerasi (Campuran)</option>
+                <option value="LITERASI">Khusus Literasi</option>
+                <option value="NUMERASI">Khusus Numerasi</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Durasi Pengerjaan (Menit)</label>
+              <input type="number" id="form-pkg-duration" class="nexus-input" value="30" min="5" max="180" required>
+            </div>
+          </div>
+
+          <div class="grid-2-col" style="gap:16px; margin-bottom:20px;">
+            <div class="form-group">
+              <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Batas Pengerjaan per Siswa</label>
+              <input type="number" id="form-pkg-attempt" class="nexus-input" value="1" min="1" max="10" required>
+            </div>
+            <div class="form-group" style="display:flex; align-items:center; gap:10px; padding-top:28px;">
+              <input type="checkbox" id="form-pkg-exp-toggle" style="width:18px; height:18px; accent-color:var(--accent-primary);" checked>
+              <label for="form-pkg-exp-toggle" style="font-size:0.85rem; font-weight:600; color:var(--text-main); cursor:pointer;">
+                Izinkan Siswa Melihat Pembahasan Setelah Kumpul
+              </label>
+            </div>
+          </div>
+
+          <!-- QUESTION PICKER -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:0.85rem; font-weight:700; color:var(--text-main);">Pilih Soal dari Bank Soal:</span>
+              <span id="picker-selected-count" style="font-size:0.8rem; color:var(--accent-primary); font-weight:700;">0 Soal Dipilih</span>
+            </div>
+            <div id="picker-questions-list" style="max-height:220px; overflow-y:auto; border:1px solid var(--border-glass); border-radius:12px; background:rgba(0,0,0,0.2);"></div>
+          </div>
+        </div>
+        <div class="nexus-modal-footer">
+          <button type="button" class="pill-btn pill-btn-secondary" onclick="document.getElementById('modal-package-form').classList.remove('open')">Batal</button>
+          <button type="submit" class="pill-btn pill-btn-primary">Simpan Paket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 5: GENERATE TOKEN SISWA -->
+  <!-- ===================================================================== -->
+  <div class="nexus-modal" id="modal-generate-token">
+    <div class="nexus-modal-card" style="max-width:480px;">
+      <div class="nexus-modal-header">
+        <h3 style="margin:0; font-size:1.2rem; font-weight:700;">Buat Token Ujian Baru</h3>
+        <button type="button" class="pill-btn pill-btn-secondary pill-btn-sm" onclick="document.getElementById('modal-generate-token').classList.remove('open')">✕</button>
+      </div>
+      <form id="form-token">
+        <div class="nexus-modal-body">
+          <div class="form-group" style="margin-bottom:16px;">
+            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Pilih Paket Ujian</label>
+            <select id="token-pkg-select" class="nexus-select" required></select>
+          </div>
+
+          <div class="form-group" style="margin-bottom:16px;">
+            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:6px;">Batas Pengerjaan Maksimal</label>
+            <input type="number" id="token-attempt-limit" class="nexus-input" value="1" min="1" max="5" required>
+          </div>
+
+          <div style="font-size:0.78rem; color:var(--text-muted); background:rgba(0,0,0,0.25); padding:12px; border-radius:10px;">
+            ℹ️ Kode token unik sepanjang 7 karakter akan otomatis dibuatkan dan dapat dibagikan kepada peserta ujian.
+          </div>
+        </div>
+        <div class="nexus-modal-footer">
+          <button type="button" class="pill-btn pill-btn-secondary" onclick="document.getElementById('modal-generate-token').classList.remove('open')">Batal</button>
+          <button type="submit" class="pill-btn pill-btn-primary">Terbitkan Token</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- CORE SCRIPTS -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
