@@ -14,12 +14,13 @@ const API = {
     const fullPayload = { action, ...payload };
 
     // Jika URL GAS aktif telah dikonfigurasi, kirim ke server sebenarnya
-    if (apiUrl && apiUrl.startsWith('http')) {
+    if (apiUrl && (apiUrl.startsWith('http') || apiUrl.startsWith('/'))) {
       try {
         const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
-            'Content-Type': 'text/plain;charset=utf-8' // Menghindari CORS preflight OPTIONS yang diblokir oleh Google Apps Script
+            // Jika via proxy Vercel gunakan application/json, jika direct GAS gunakan text/plain agar tidak kena preflight
+            'Content-Type': apiUrl.startsWith('/') ? 'application/json' : 'text/plain;charset=utf-8'
           },
           body: JSON.stringify(fullPayload)
         });
@@ -30,8 +31,11 @@ const API = {
         }
         return resData.data;
       } catch (err) {
-        // Jika gagal karena CORS, coba fallback JSONP untuk aksi GET jika memungkinkan
-        console.warn('GAS fetch gagal, memeriksa error:', err);
+        console.warn('Backend request error:', err);
+        // Jika proxy belum terhubung atau mode offline lokal, fallback ke mock jika diizinkan
+        if (typeof window !== 'undefined' && window.location.protocol === 'file:') {
+          return this.mockBackend(action, fullPayload);
+        }
         throw err;
       }
     }

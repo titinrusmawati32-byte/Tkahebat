@@ -2,11 +2,17 @@
  * ==============================================================================
  * KONFIGURASI APLIKASI TRYOUT TKA SD
  * ==============================================================================
- * Cara menghubungkan ke Google Apps Script:
- * 1. Deploy Apps Script sebagai Web App (Akses: Anyone).
- * 2. Salin URL Web App (berakhiran `/exec`).
- * 3. Isi konstanta DEFAULT_GAS_API_URL di bawah ini, ATAU masukkan melalui
- *    menu 'Pengaturan' pada Dashboard Admin.
+ * Menghubungkan ke Google Apps Script di Luar Aplikasi:
+ *
+ * Cara 1 (Rekomendasi di Vercel - Tanpa Ubah Kode):
+ *   Buka Vercel Dashboard > Proyek Anda > Settings > Environment Variables.
+ *   Tambahkan:
+ *     Key: GAS_URL
+ *     Value: [URL Web App Google Apps Script Anda yang berakhiran /exec]
+ *   Frontend otomatis terhubung melalui serverless proxy /api/gas.
+ *
+ * Cara 2 (Langsung di Repositori GitHub):
+ *   Isi konstanta DEFAULT_GAS_API_URL di bawah ini dengan URL Web App Anda.
  * ==============================================================================
  */
 
@@ -14,15 +20,29 @@ const CONFIG = {
   APP_NAME: 'Tryout TKA SD',
   VERSION: '1.0.0',
   
-  // URL Web App Google Apps Script default (Bisa diperbarui lewat menu Admin)
+  // URL Web App Google Apps Script default (Bisa diisi langsung di file ini pada GitHub)
   DEFAULT_GAS_API_URL: '',
 
-  // Ambil URL aktif (memprioritaskan yang tersimpan di localStorage browser)
+  // Endpoint Serverless Proxy Vercel (Otomatis membaca env GAS_URL di Vercel)
+  VERCEL_PROXY_ENDPOINT: '/api/gas',
+
+  // Ambil URL aktif yang berjalan di luar antarmuka aplikasi
   getApiUrl: function() {
-    return localStorage.getItem('TKA_GAS_API_URL') || this.DEFAULT_GAS_API_URL;
+    // 1. Prioritas utama: jika DEFAULT_GAS_API_URL diisi langsung di file ini
+    if (this.DEFAULT_GAS_API_URL && this.DEFAULT_GAS_API_URL.trim().startsWith('http')) {
+      return this.DEFAULT_GAS_API_URL.trim();
+    }
+
+    // 2. Jika aplikasi berjalan di hosting web (seperti Vercel), gunakan proxy serverless /api/gas
+    if (typeof window !== 'undefined' && window.location && window.location.protocol.startsWith('http')) {
+      return this.VERCEL_PROXY_ENDPOINT;
+    }
+
+    // 3. Fallback jika membuka via file:/// lokal
+    return localStorage.getItem('TKA_GAS_API_URL') || '';
   },
 
-  // Set URL aktif
+  // Set URL aktif (opsional fallback)
   setApiUrl: function(url) {
     if (url && url.trim()) {
       localStorage.setItem('TKA_GAS_API_URL', url.trim());

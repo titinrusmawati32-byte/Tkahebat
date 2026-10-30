@@ -2,9 +2,10 @@
   "version": 2,
   "name": "tryout-tka-sd",
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/admin/(.*)", "destination": "/admin.html" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!api|admin|css|js|images|fonts|.*\\..*).*)", "destination": "/index.html" }
   ],
   "headers": [
     {
