@@ -504,6 +504,11 @@ const AdminApp = {
   // IMPORT SOAL CSV & LAPORAN VALIDASI PER BARIS
   // ==============================================================================
 
+  openTemplateModal() {
+    const modal = document.getElementById('modal-template-excel');
+    if (modal) modal.classList.add('open');
+  },
+
   openImportModal() {
     document.getElementById('import-report-box').style.display = 'none';
     document.getElementById('btn-confirm-import').style.display = 'none';

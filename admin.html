@@ -603,14 +603,17 @@
             <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Kelola soal Literasi & Numerasi, opsi jawaban, pembahasan, dan media gambar.</p>
           </div>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <a href="template_import_soal.csv" download class="pill-btn pill-btn-outline pill-btn-sm" style="text-decoration:none;">
-              📄 Unduh Template CSV
-            </a>
-            <button type="button" class="pill-btn pill-btn-secondary pill-btn-sm" onclick="AdminApp.openImportModal()">
-              📥 Import CSV/Excel
+            <button type="button" class="pill-btn pill-btn-outline pill-btn-sm" onclick="AdminApp.openTemplateModal()">
+              📊 Format Tabel Excel
             </button>
-            <button type="button" class="pill-btn pill-btn-primary pill-btn-sm" onclick="AdminApp.openAddQuestionModal()">
-              + Tambah Soal Manual
+            <a href="template_import_soal.csv" download="template_soal_tka_sd.csv" class="pill-btn pill-btn-secondary pill-btn-sm" style="text-decoration:none;">
+              📥 Unduh Template CSV/Excel
+            </a>
+            <button type="button" class="pill-btn pill-btn-primary pill-btn-sm" onclick="AdminApp.openImportModal()">
+              📤 Upload & Import Soal
+            </button>
+            <button type="button" class="pill-btn pill-btn-secondary pill-btn-sm" onclick="AdminApp.openAddQuestionModal()">
+              + Buat Soal Manual
             </button>
           </div>
         </div>
@@ -975,18 +978,228 @@
   </div>
 
   <!-- ===================================================================== -->
+  <!-- MODAL: FORMAT TEMPLATE SOAL EXCEL (Sesuai Referensi Gambar Pengguna) -->
+  <!-- ===================================================================== -->
+  <div class="nexus-modal" id="modal-template-excel">
+    <div class="nexus-modal-card" style="max-width:1100px; width:95%;">
+      <div class="nexus-modal-header">
+        <div>
+          <h3 style="margin:0; font-size:1.25rem; font-weight:800; color:var(--text-main);">Format Template Soal Excel / CSV</h3>
+          <p style="margin:4px 0 0 0; font-size:0.8rem; color:var(--text-muted);">
+            Tabel di bawah merupakan standar resmi kolom template impor soal. Kolom <strong>Kunci</strong> disorot warna hijau.
+          </p>
+        </div>
+        <button type="button" class="pill-btn pill-btn-secondary pill-btn-sm" onclick="document.getElementById('modal-template-excel').classList.remove('open')">✕</button>
+      </div>
+
+      <div class="nexus-modal-body" style="max-height:75vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+          <div style="font-size:0.85rem; color:var(--text-main); font-weight:600;">
+            Pratinjau Tabel Excel (11 Kolom Standar):
+          </div>
+          <div style="display:flex; gap:10px;">
+            <a href="template_import_soal.csv" download="template_soal_tka_sd.csv" class="pill-btn pill-btn-primary pill-btn-sm" style="text-decoration:none;">
+              📥 Download File Template (.csv)
+            </a>
+            <button type="button" class="pill-btn pill-btn-secondary pill-btn-sm" onclick="document.getElementById('modal-template-excel').classList.remove('open'); AdminApp.openImportModal();">
+              📤 Upload File Anda Sekarang
+            </button>
+          </div>
+        </div>
+
+        <div class="excel-spreadsheet-wrapper">
+          <div class="excel-spreadsheet-scroll">
+            <table class="excel-grid-table">
+              <thead>
+                <tr>
+                  <th class="center" style="width:45px;">No <span class="excel-filter-btn">▼</span></th>
+                  <th style="min-width:170px;">Materi/Kompetensi <span class="excel-filter-btn">▼</span></th>
+                  <th style="min-width:110px;">Level <span class="excel-filter-btn">▼</span></th>
+                  <th style="min-width:110px;">Bentuk <span class="excel-filter-btn">▼</span></th>
+                  <th style="min-width:260px;">Soal <span class="excel-filter-btn">▼</span></th>
+                  <th style="min-width:70px;">A <span class="excel-filter-btn">▼</span></th>
+                  <th style="min-width:70px;">B <span class="excel-filter-btn">▼</span></th>
+                  <th style="min-width:70px;">C <span class="excel-filter-btn">▼</span></th>
+                  <th style="min-width:70px;">D <span class="excel-filter-btn">▼</span></th>
+                  <th class="center" style="min-width:65px; background:#0d3527;">Kunci <span class="excel-filter-btn">▼</span></th>
+                  <th style="min-width:240px;">Pembahasan <span class="excel-filter-btn">▼</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="center">1</td>
+                  <td>Bilangan cacah: operasi hitung</td>
+                  <td>L2 – aplikasi</td>
+                  <td>Pilihan ganda</td>
+                  <td>Perpustakaan memiliki 1.245 buku. Sekolah menerima 275 buku baru, lalu 138 buku dipindahkan ke ruang baca lain. Berapa buku yang tersisa di perpustakaan utama?</td>
+                  <td>1.282</td>
+                  <td>1.382</td>
+                  <td>1.520</td>
+                  <td>1.658</td>
+                  <td class="excel-kunci-cell">B</td>
+                  <td>1.245 + 275 = 1.520. Kemudian 1.520 − 138 = 1.382 buku.</td>
+                </tr>
+                <tr>
+                  <td class="center">2</td>
+                  <td>Bilangan: operasi perkalian</td>
+                  <td>L2 – aplikasi</td>
+                  <td>Pilihan ganda</td>
+                  <td>Ada 24 kotak pensil. Setiap kotak berisi 12 pensil. Jumlah seluruh pensil adalah ....</td>
+                  <td>188</td>
+                  <td>248</td>
+                  <td>288</td>
+                  <td>312</td>
+                  <td class="excel-kunci-cell">C</td>
+                  <td>24 × 12 = 24 × (10 + 2) = 240 + 48 = 288.</td>
+                </tr>
+                <tr>
+                  <td class="center">3</td>
+                  <td>Bilangan: pembagian</td>
+                  <td>L2 – aplikasi</td>
+                  <td>Pilihan ganda</td>
+                  <td>Sebanyak 168 buku dibagikan sama banyak kepada 8 kelas. Setiap kelas menerima ....</td>
+                  <td>18</td>
+                  <td>20</td>
+                  <td>21</td>
+                  <td>24</td>
+                  <td class="excel-kunci-cell">C</td>
+                  <td>168 ÷ 8 = 21 buku untuk setiap kelas.</td>
+                </tr>
+                <tr>
+                  <td class="center">4</td>
+                  <td>Pecahan senilai</td>
+                  <td>L1 – pemahaman</td>
+                  <td>Pilihan ganda</td>
+                  <td>Pecahan yang senilai dengan 3/4 adalah ....</td>
+                  <td>6/8</td>
+                  <td>4/6</td>
+                  <td>5/8</td>
+                  <td>6/10</td>
+                  <td class="excel-kunci-cell">A</td>
+                  <td>3/4 dikalikan pembilang dan penyebut dengan 2 menghasilkan 6/8.</td>
+                </tr>
+                <tr>
+                  <td class="center">5</td>
+                  <td>Membandingkan pecahan</td>
+                  <td>L2 – aplikasi</td>
+                  <td>Pilihan ganda</td>
+                  <td>Manakah pecahan yang nilainya paling besar?</td>
+                  <td>1/2</td>
+                  <td>2/3</td>
+                  <td>3/5</td>
+                  <td>5/8</td>
+                  <td class="excel-kunci-cell">B</td>
+                  <td>2/3 ≈ 0,667; 5/8 = 0,625; 3/5 = 0,6; 1/2 = 0,5. Jadi 2/3 paling besar.</td>
+                </tr>
+                <tr>
+                  <td class="center">6</td>
+                  <td>Desimal dan persen</td>
+                  <td>L1 – pemahaman</td>
+                  <td>Pilihan ganda</td>
+                  <td>Nilai 35% dalam bentuk desimal adalah ....</td>
+                  <td>0,035</td>
+                  <td>0,35</td>
+                  <td>3,5</td>
+                  <td>35,0</td>
+                  <td class="excel-kunci-cell">B</td>
+                  <td>Persen berarti per seratus, sehingga 35% = 35/100 = 0,35.</td>
+                </tr>
+                <tr>
+                  <td class="center">7</td>
+                  <td>Operasi pecahan</td>
+                  <td>L2 – aplikasi</td>
+                  <td>Pilihan ganda</td>
+                  <td>Ibu menggunakan 2/8 kg tepung untuk kue dan 3/8 kg untuk roti. Tepung yang digunakan seluruhnya adalah ....</td>
+                  <td>1/8 kg</td>
+                  <td>5/8 kg</td>
+                  <td>5/16 kg</td>
+                  <td>6/8 kg</td>
+                  <td class="excel-kunci-cell">B</td>
+                  <td>Penyebut sama, maka 2/8 + 3/8 = 5/8 kg.</td>
+                </tr>
+                <tr>
+                  <td class="center">8</td>
+                  <td>Operasi pecahan dengan bilangan asli</td>
+                  <td>L2 – aplikasi</td>
+                  <td>Pilihan ganda</td>
+                  <td>Sebuah pita panjangnya 24 meter. Sebanyak 3/4 bagian digunakan untuk menghias kelas. Berapa meter pita yang digunakan?</td>
+                  <td>6</td>
+                  <td>12</td>
+                  <td>18</td>
+                  <td>21</td>
+                  <td class="excel-kunci-cell">C</td>
+                  <td>3/4 × 24 = 24 ÷ 4 × 3 = 6 × 3 = 18 meter.</td>
+                </tr>
+                <tr>
+                  <td class="center">9</td>
+                  <td>Faktor dan kelipatan</td>
+                  <td>L3 – penalaran</td>
+                  <td>Pilihan ganda</td>
+                  <td>Lampu A berkedip setiap 6 detik dan lampu B setiap 8 detik. Jika keduanya berkedip bersama sekarang, setelah berapa detik keduanya berkedip bersama lagi?</td>
+                  <td>12</td>
+                  <td>18</td>
+                  <td>24</td>
+                  <td>48</td>
+                  <td class="excel-kunci-cell">C</td>
+                  <td>KPK(6, 8) = 24, jadi keduanya kembali bersamaan setelah 24 detik.</td>
+                </tr>
+                <tr>
+                  <td class="center">10</td>
+                  <td>Faktor persekutuan terbesar</td>
+                  <td>L3 – penalaran</td>
+                  <td>Pilihan ganda</td>
+                  <td>Ada 36 pensil dan 48 penghapus. Semua akan dibagi ke dalam paket yang sama, tanpa sisa, dengan jumlah paket sebanyak mungkin. Berapa paket yang dapat dibuat?</td>
+                  <td>6</td>
+                  <td>8</td>
+                  <td>12</td>
+                  <td>18</td>
+                  <td class="excel-kunci-cell">C</td>
+                  <td>Jumlah paket maksimum adalah FPB(36, 48) = 12. Setiap paket berisi 3 pensil dan 4 penghapus.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div style="margin-top:16px; padding:12px 16px; background:rgba(0,0,0,0.25); border-radius:10px; font-size:0.8rem; color:var(--text-muted); line-height:1.6;">
+          💡 <strong>Tips Pengisian Excel:</strong>
+          <ul style="padding-left:18px; margin-top:4px;">
+            <li>Untuk soal <strong>Pilihan Ganda Biasa</strong>, isi kolom Kunci dengan satu huruf (A/B/C/D).</li>
+            <li>Untuk soal <strong>Pilihan Ganda Kompleks</strong>, isi kolom Bentuk dengan <code>Pilihan ganda kompleks (MCMA)</code> dan kolom Kunci dengan beberapa huruf dipisah koma (contoh: <code>A, B, D</code>).</li>
+            <li>Setelah diedit di Microsoft Excel atau Google Sheets, simpan dengan format <strong>CSV (Comma delimited) (*.csv)</strong> lalu upload melalui menu <em>Upload & Import Soal</em>.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="nexus-modal-footer">
+        <a href="template_import_soal.csv" download="template_soal_tka_sd.csv" class="pill-btn pill-btn-primary">
+          📥 Unduh Template (.csv)
+        </a>
+        <button type="button" class="pill-btn pill-btn-secondary" onclick="document.getElementById('modal-template-excel').classList.remove('open')">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
   <!-- MODAL 3: IMPORT SOAL CSV DENGAN LAPORAN VALIDASI PER BARIS -->
   <!-- ===================================================================== -->
   <div class="nexus-modal" id="modal-import-csv">
-    <div class="nexus-modal-card" style="max-width:800px;">
+    <div class="nexus-modal-card" style="max-width:960px; width:95%;">
       <div class="nexus-modal-header">
         <h3 style="margin:0; font-size:1.2rem; font-weight:700;">Import Soal via CSV / Excel</h3>
         <button type="button" class="pill-btn pill-btn-secondary pill-btn-sm" onclick="document.getElementById('modal-import-csv').classList.remove('open')">✕</button>
       </div>
       <div class="nexus-modal-body" style="max-height:75vh; overflow-y:auto;">
-        <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
-          Pilih file CSV sesuai format template. Sistem akan memvalidasi kolom wajib, kategori (LITERASI/NUMERASI), batang soal, dan kunci jawaban per baris.
-        </p>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; background:rgba(23,68,110,0.25); border:1px solid #17446e; padding:12px 16px; border-radius:10px;">
+          <div style="font-size:0.85rem; color:var(--text-main);">
+            📋 Gunakan format tabel 11 kolom (<strong>No, Materi/Kompetensi, Level, Bentuk, Soal, A, B, C, D, Kunci, Pembahasan</strong>).
+          </div>
+          <button type="button" class="pill-btn pill-btn-outline pill-btn-sm" onclick="AdminApp.openTemplateModal()">
+            👁️ Lihat Contoh Tabel
+          </button>
+        </div>
 
         <div style="border:2px dashed var(--border-glass); border-radius:16px; padding:30px; text-align:center; margin-bottom:20px;">
           <input type="file" id="input-import-file" accept=".csv" style="display:none;">

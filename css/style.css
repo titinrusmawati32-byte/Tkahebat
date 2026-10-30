@@ -1022,3 +1022,90 @@ h1, h2, h3, h4, h5, h6 {
     align-items: flex-start;
   }
 }
+
+
+/* ==============================================================================
+   EXCEL TEMPLATE SPREADSHEET STYLE (Sesuai Referensi Gambar Pengguna)
+   ============================================================================== */
+.excel-spreadsheet-wrapper {
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #10385c;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.excel-spreadsheet-scroll {
+  overflow-x: auto;
+  max-height: 480px;
+}
+
+.excel-grid-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #1a1a1a;
+  background: #ffffff;
+}
+
+.excel-grid-table thead tr {
+  background: #17446e; /* Dark navy blue Excel table header */
+  color: #ffffff;
+}
+
+.excel-grid-table th {
+  padding: 8px 10px;
+  font-weight: 700;
+  border: 1px solid #0d2944;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  background: #17446e;
+  z-index: 10;
+  text-align: left;
+}
+
+.excel-grid-table th.center,
+.excel-grid-table td.center {
+  text-align: center;
+}
+
+.excel-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  background: #ffffff;
+  color: #17446e;
+  border-radius: 2px;
+  font-size: 8px;
+  margin-left: 6px;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.excel-grid-table td {
+  padding: 6px 10px;
+  border: 1px solid #dcdcdc;
+  vertical-align: top;
+  color: #111827;
+}
+
+.excel-grid-table tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+.excel-grid-table tbody tr:hover {
+  background: #f1f5f9;
+}
+
+.excel-kunci-cell {
+  background: #d4edda !important; /* Soft green highlight seperti pada gambar */
+  color: #155724 !important;
+  font-weight: 700;
+  text-align: center;
+  font-family: var(--font-mono);
+}
